@@ -1,0 +1,109 @@
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <title>User Portfolio</title>
+  </head>
+  <body class="Portfolio">
+    {% if portfolio %}
+        <div class="Portfolio__Name">
+            <h1>{{portfolio.name}}</h1>
+            {% if portfolio_assets.count < 5 %}
+                <p>Portfolio must have at least 5 assets</p>
+            {% endif %}
+            <form action="{% url 'portfolios:sort_assets' user_id portfolio.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" name="market_cap" id="market_cap" value="market_cap">Sort By Market Cap</button>
+                <button type="submit" name="change_daily" id="change_daily" value="change_daily">Sort By 24h % Change</button>
+                <button type="submit" name="volume" id="volume" value="volume">Sort By Volume</button>
+                <button type="submit" name="clear" id="clear" value="clear">Clear</button>
+            </form>
+        </div>
+        <div class="mb-5">
+            {% if portfolio_assets %}
+                <table class="table">
+                    <tr>
+                        <th>Remove</th>
+                        <th>Name</th>
+                        <th>Symbol</th>
+                        <th>Price (USD)</th>
+                        <th>Market Cap (USD)</th>
+                        <th>Volume (USD)</th>
+                        <th>24h % Change</th>
+                    </tr>
+                    {% for asset in portfolio_assets %}
+                        <tr>
+                            <td>
+                                <form action="{% url 'portfolios:remove_asset' user_id portfolio.id asset.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">Remove</button>
+                                </form>
+                            </td>
+                            <td>{{ asset.name }}</td>
+                            <td>{{ asset.symbol }}</td>
+                            <td>{{ asset.price }}</td>
+                            <td>{{ asset.market_cap }}</td>
+                            {% if asset.is_highest_volume %}
+                                <td>{{ asset.volume }} (HIGHEST VOLUME)</td>
+                            {% else %}
+                                <td>{{ asset.volume }}</td>
+                            {% endif %}
+                            <td>{{ asset.change_daily }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+        </div>
+        <div class="Portfolio__Available__Assets">
+            {% if available_assets %}
+                <table class="table">
+                    <tr>
+                        <th>Add</th>
+                        <th>Name</th>
+                        <th>Symbol</th>
+                        <th>Price (USD)</th>
+                        <th>Market Cap (USD)</th>
+                        <th>Volume (USD)</th>
+                        <th>24h % Change</th>
+                    </tr>
+                    {% for asset in available_assets %}
+                        <tr>
+                            <td>
+                                <form action="{% url 'portfolios:add_asset' user_id portfolio.id asset.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">Add</button>
+                                </form>
+                            </td>
+                            <td>{{ asset.name }}</td>
+                            <td>{{ asset.symbol }}</td>
+                            <td>{{ asset.price }}</td>
+                            <td>{{ asset.market_cap }}</td>
+                            <td>{{ asset.volume }}</td>
+                            <td>{{ asset.change_daily }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="Portfolio__Add">
+            <div class="Portfolio__Add__Header">
+                Add Portfolio
+            </div>
+            <div class="Portfolio__Add__Form">
+                <form action="{% url 'portfolios:add_portfolio' user_id %}" method="post">
+                    {% csrf_token %}
+                    <div>
+                        Name:
+                        <input type="text" name="name" id="name">
+                        <input type="submit" value="Add">
+                    </div>
+                    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+                </form>
+            </div>
+        </div>
+    {% endif %}
+  </body>
+</html>
